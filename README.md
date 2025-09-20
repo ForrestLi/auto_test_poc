@@ -2,12 +2,13 @@ This repository contains a proof-of-concept (PoC) for an automated testing frame
 electronic trading systems. The framework validates systems communicating via the FIX protocol or other binary protocols
 (e.g., AHD).
 
-The primary objective is to automate business-critical test scenarios as agreed upon by all stakeholders.
+The primary objective is to automate test scenarios based on priorities as agreed upon by all stakeholders.
+e.g. Cover business critical, regulatory, most repeated smoke/regression suites ones first.
 
 **Value Proposition:**
 *   **Reliability & Repeatability:** Automates manual testing processes, ensuring consistent results.
 *   **Modularity:** Clean dependency injection makes tests easy to write, understand, and maintain.
-*   **Coverage:** Supports testing of complex, stateful workflows endemic to trading systems
+*   **Coverage:** Supports testing of complex, stateful workflows endemic to trading systems.
 (order placement, cancel/replace, etc.).
 *   **Foundation for Performance Testing:** Lays the groundwork for future latency measurement and load testing.
 
@@ -15,7 +16,7 @@ The primary objective is to automate business-critical test scenarios as agreed 
 
 ### Objective
 Establish a robust foundation for message-level integration testing of the trading stack, focusing on reliability 
-and repeatability.
+and repeatability. 
 
 ### Technical Approach
 The framework uses **pytest** as its core due to powerful features for organizing tests and managing dependencies 
@@ -111,7 +112,7 @@ Which to choose? Use AAA for unique, complex scenarios. Use chained calls for co
 
 Phase II: Proposed Future Enhancements
 
-*   Advanced Scenario Testing: Expand coverage to complex, hard-to-test-manually scenarios 
+*   Cover More Scenarios: Expand coverage to complex, hard-to-test-manually scenarios 
 (e.g., session management, unconfirmed scenarios).
 
 *   Implement Latency Measurement: Integrate performance profiling using multithreading/asyncio for synthetic load and 
