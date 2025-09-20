@@ -49,10 +49,6 @@ Test Environment & Stubbing:
 System Topology:
 
 [ FIX/Binary Client ] -> [ Trading System (SUT) ] -> [ Exchange Simulator ]
-                                ^
-                                |
-                    [ Risk & Reference Data Stubs (CSV/Static) ]
-
 
 SUT (System Under Test): The trading system itself.
 
