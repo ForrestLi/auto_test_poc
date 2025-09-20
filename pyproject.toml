@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "auto-test-poc"
+version = "0.0.1"
+description = "Auto test framework for eletronic trading system talking FIX or other binary protocols (e.g. AHD)"
+authors = ["forrest.shijili@gmail.com"]
+
+[tool.poetry.dependencies]
+python = "^3.8"  # Adjust based on your project's Python version
+jinja2 = "*"
+overrides = "*"
+quickfix = "*"
+pyhamcrest = "*"
+plumbum = "*"
+rpyc = "*"
+numpy = "*"
+scipy = "*"
+six = "*"
+scapy = "*"
+hanging-threads = "*"
+tox = "*"
+black = "*"
+
+# PyPI name for 'hanging_threads'
+
+[tool.poetry.group.dev.dependencies]
+pytest = "*"  # Pytest is typically a dev dependency
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
