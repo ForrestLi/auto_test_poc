@@ -24,7 +24,7 @@ cleanly through its fixture mechanism.
 **Dependency Injection:** Dependencies (e.g., market simulators, securities data, risk limits data) are injected 
 into test cases using `@pytest.fixture` defined in `conftest.py`. This promotes modular and maintainable code.
 
-**Example fixture (`conftest.py`):**
+**Example AHD fixture (`conftest.py`):**
 ```
 @pytest.fixture
 def checker(request, ems, securities, mxsim, ahd_client):
@@ -65,7 +65,7 @@ The framework supports multiple patterns for structuring test logic:
 1, Explicit Arrange-Act-Assert (AAA):
 Ideal for complex, one-off test scenarios where clarity is paramount.
 
-example
+example FIX one
 ```
 def test_new_order_single_acknowledgment(fix_client, security):
     # Arrange
@@ -91,7 +91,7 @@ def test_new_order_single_acknowledgment(fix_client, security):
 2, Chained Calls for Simple Smoke/Regression Suites:
 Provides a concise, readable syntax for common end-to-end workflows (e.g., New Order -> Cancel).
 
-example
+FIX example
 ```
 def test_new_order_single_cancel(fix_checker, security):
     """Test new order single followed by cancel."""
