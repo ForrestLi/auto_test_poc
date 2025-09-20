@@ -111,15 +111,15 @@ Which to choose? Use AAA for unique, complex scenarios. Use chained calls for co
 
 Phase II: Proposed Future Enhancements
 
-Advanced Scenario Testing: Expand coverage to complex, hard-to-test-manually scenarios 
+*   **Advanced Scenario Testing: Expand coverage to complex, hard-to-test-manually scenarios 
 (e.g., session management, unconfirmed messages).
 
-Implement Latency Measurement: Integrate performance profiling using multithreading/asyncio for synthetic load and 
+*   **Implement Latency Measurement: Integrate performance profiling using multithreading/asyncio for synthetic load and 
 custom drop copy passthrough tags for granular analysis.
 
-Build a Recording/Replay Proxy: Develop a proxy to record and replay real exchange responses between the EMS and venues,
+*   **Build a Recording/Replay Proxy: Develop a proxy to record and replay real exchange responses between the EMS and venues,
 reducing simulator dependency and increasing test realism. 
 (Note: Requires re-recording if exchange specifications change.)
 
-CI/CD Integration: Fully integrate the automated test suite into a continuous integration and delivery pipeline to 
+*   **CI/CD Integration: Fully integrate the automated test suite into a continuous integration and delivery pipeline to 
 enforce quality gates throughout the development lifecycle.
