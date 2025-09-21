@@ -23,7 +23,7 @@ The framework uses **pytest** as its core due to powerful features for organizin
 cleanly through its fixture mechanism.
 
 **Dependency Injection:** Dependencies (e.g., market simulators, securities data, risk limits data) are injected 
-into test cases using `@pytest.fixture` defined in `conftest.py`. This promotes modular and maintainable code.
+into test cases using `@pytest.fixture`. This promotes modular and maintainable code.
 
 **Example AHD fixture (`conftest.py`):**
 ```
