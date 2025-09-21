@@ -19,6 +19,7 @@ scapy = "*"
 hanging-threads = "*"
 tox = "*"
 black = "*"
+pandas = "*"
 
 # PyPI name for 'hanging_threads'
 
