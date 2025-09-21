@@ -1,0 +1,44 @@
+version: "3.8"
+
+services:
+  fix-server:
+    build: .
+    image: auto-test-poc:latest
+    container_name: fix-server
+    command: ["python", "fix_poc/fix_server_asyncio.py", "--host", "0.0.0.0", "--port", "9876", "--auto-fill", "--log-level", "INFO"]
+    ports:
+      - "9876:9876"
+
+  stress:
+    image: auto-test-poc:latest
+    container_name: stress-fix-async
+    depends_on:
+      - fix-server
+    command: [
+      "python", "fix_poc/stress_fix_asyncio.py",
+      "--host", "fix-server",
+      "--port", "9876",
+      "--sender", "CLIENT",
+      "--target", "SERVER",
+      "--concurrency", "2",
+      "--messages-per-conn", "50",
+      "--rate", "200",
+      "--measure-latency",
+      "--latency-sample-every", "5",
+      "--csv", "/artifacts/stress_results.csv",
+      "--log-level", "INFO"
+    ]
+    volumes:
+      - ./artifacts:/artifacts
+
+  tests:
+    image: auto-test-poc:latest
+    container_name: autotest-pytests
+    command: [
+      "pytest", "-q", "-s", "--maxfail=1",
+      "--junitxml=/artifacts/junit.xml",
+      "--html=/artifacts/report.html", "--self-contained-html",
+      "test"
+    ]
+    volumes:
+      - ./artifacts:/artifacts
