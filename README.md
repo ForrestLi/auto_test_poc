@@ -122,6 +122,8 @@ reducing simulator dependency and increasing test realism.
 *   CI/CD Integration: Fully integrate the automated test suite into a continuous integration and delivery pipeline to 
 enforce quality gates throughout the development lifecycle.
 
+Talk is easy, time to show some basic implementations.
+
 ## Project Structure
 
 This repository is organized to separate reusable protocol utilities from sample PoC code and unit tests. A quick tour:
