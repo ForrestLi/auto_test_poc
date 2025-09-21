@@ -2,10 +2,10 @@ from typing import Dict, Any, Optional, Set
 from dataclasses import dataclass
 from enum import Enum
 
-import overrides
+from overrides import overrides
 
-from common.test_utils import GenericChecker
-from fix_msg import MsgType as FixMessageType, Field as FixTag
+from .test_utils import GenericChecker
+from .fix_msg import MsgType as FixMessageType, Field as FixTag
 
 
 class FIXClientChecker(GenericChecker):
@@ -35,7 +35,8 @@ class FIXClientChecker(GenericChecker):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.fix_client = kwargs["fix_client"]
-        self.exchange_sim = kwargs["exchange_sim"]
+        # Accept either 'exchange_sim' or legacy 'mxsim'
+        self.exchange_sim = kwargs.get("exchange_sim") or kwargs.get("mxsim")
         self.expected_seq_num = 1
 
     def _extract_field(self, msg: Dict[str, str], tag: str, default: Any = None) -> Any:
@@ -83,7 +84,7 @@ class FIXClientChecker(GenericChecker):
         return {k: v for k, v in fix_msg.items() if v is not None}
 
     @overrides
-    def newOrder(self, order, **kwargs):
+    def newOrder(self, order, **kwargs) -> GenericChecker:
         """Send a new order (NewOrderSingle) with support for short selling."""
         if not kwargs.get("dk", False):
             fix_msg = self._build_new_order_single(**kwargs)
@@ -94,7 +95,7 @@ class FIXClientChecker(GenericChecker):
         return self
 
     @overrides
-    def ordered(self, order, **kwargs):
+    def ordered(self, order, **kwargs) -> GenericChecker:
         """Validate order acceptance (ExecutionReport with ExecType=NEW)."""
         msg = self.fix_client.receiveMsg()
 
@@ -121,7 +122,7 @@ class FIXClientChecker(GenericChecker):
         return self
 
     @overrides
-    def reject(self, order, **kwargs):
+    def reject(self, order, **kwargs) -> GenericChecker:
         """Validate order rejection (ExecutionReport with ExecType=REJECT)."""
         msg = self.fix_client.receiveMsg()
 
@@ -148,7 +149,7 @@ class FIXClientChecker(GenericChecker):
         return self
 
     @overrides
-    def fill(self, order, **kwargs):
+    def fill(self, order, **kwargs) -> GenericChecker:
         """Validate order fill (ExecutionReport with ExecType=FILL)."""
         orderID = kwargs.get("orderID", order.orderID)
         # can also not use exchange_sim, but use the opposite side, then record/replay

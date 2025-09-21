@@ -63,6 +63,7 @@ class Order:
     checker: Any
     security: Any = None
     side: str = None
+    # Primary snake_case attributes
     order_qty: Optional[int] = None
     exec_qty: int = 0
     order_price: Optional[float] = None
@@ -73,6 +74,17 @@ class Order:
     client_id: Optional[str] = None
     account_id: Optional[str] = None
     order_status: str = "new"
+    # camelCase aliases (optional). If provided, will be mapped to snake_case in __post_init__
+    orderQty: Optional[int] = None
+    execQty: Optional[int] = None
+    orderPrice: Optional[float] = None
+    clOrdID: Optional[str] = None
+    destClOrdID: Optional[str] = None
+    orderID2: Optional[str] = None
+    timeInForce: Optional[str] = None
+    clientID: Optional[str] = None
+    accountID: Optional[str] = None
+    orderStatus: Optional[str] = None
     dk: bool = False
 
     # Modification history
@@ -80,6 +92,24 @@ class Order:
     _modify_attributes = {"order_qty", "order_price", "cl_ord_id", "time_in_force"}
 
     def __post_init__(self):
+        # Map camelCase constructor parameters to snake_case if provided
+        alias_map = {
+            "orderQty": "order_qty",
+            "execQty": "exec_qty",
+            "orderPrice": "order_price",
+            "clOrdID": "cl_ord_id",
+            "destClOrdID": "dest_cl_ord_id",
+            "orderID2": "order_id2",
+            "timeInForce": "time_in_force",
+            "clientID": "client_id",
+            "accountID": "account_id",
+            "orderStatus": "order_status",
+        }
+        for camel, snake in alias_map.items():
+            camel_val = getattr(self, camel)
+            if camel_val is not None and getattr(self, snake) in (None, 0, "new"):
+                setattr(self, snake, camel_val)
+
         self.checker.orders.append(self)
 
     def __str__(self) -> str:
@@ -267,6 +297,7 @@ class Order:
     # Internal methods for state changes
     def _new_order(self, **kwargs) -> None:
         """Handle new order creation."""
+        kwargs = self._normalize_kwargs(kwargs)
         self.dk = kwargs.get("dk", False)
         self.security = kwargs.get("security")
         self.side = kwargs.get("side")
@@ -282,6 +313,7 @@ class Order:
 
     def _ordering(self, **kwargs) -> None:
         """Handle ordering state."""
+        kwargs = self._normalize_kwargs(kwargs)
         for attr in [
             "order_qty",
             "order_price",
@@ -297,15 +329,18 @@ class Order:
 
     def _ordered(self, **kwargs) -> None:
         """Handle ordered state."""
+        kwargs = self._normalize_kwargs(kwargs)
         self.order_status = "open"
         self._ordering(**kwargs)
 
     def _reject(self, **kwargs) -> None:
         """Handle reject state."""
+        kwargs = self._normalize_kwargs(kwargs)
         self.order_status = "closed"
 
     def _modify(self, **kwargs) -> None:
         """Handle modify state."""
+        kwargs = self._normalize_kwargs(kwargs)
         self.push_modify()
 
         if "order_qty" in kwargs and kwargs["order_qty"] is not None:
@@ -330,10 +365,12 @@ class Order:
 
     def _modifying(self, **kwargs) -> None:
         """Handle modifying state."""
+        kwargs = self._normalize_kwargs(kwargs)
         self._ordering(**kwargs)
 
     def _modified(self, **kwargs) -> None:
         """Handle modified state."""
+        kwargs = self._normalize_kwargs(kwargs)
         self.pop_modify(False)
         self._ordering(**kwargs)
 
@@ -342,10 +379,12 @@ class Order:
 
     def _mod_reject(self, **kwargs) -> None:
         """Handle mod reject state."""
+        kwargs = self._normalize_kwargs(kwargs)
         self.pop_modify(True)
 
     def _cancel(self, **kwargs) -> None:
         """Handle cancel state."""
+        kwargs = self._normalize_kwargs(kwargs)
         self.push_modify()
         for attr in ["cl_ord_id", "dest_cl_ord_id", "client_id", "account_id"]:
             if attr in kwargs and kwargs[attr] is not None:
@@ -353,20 +392,24 @@ class Order:
 
     def _canceling(self, **kwargs) -> None:
         """Handle canceling state."""
+        kwargs = self._normalize_kwargs(kwargs)
         self._ordering(**kwargs)
 
     def _canceled(self, **kwargs) -> None:
         """Handle canceled state."""
+        kwargs = self._normalize_kwargs(kwargs)
         self.pop_modify(False)
         self._ordering(**kwargs)
         self.order_status = "closed"
 
     def _cxl_reject(self, **kwargs) -> None:
         """Handle cxl reject state."""
+        kwargs = self._normalize_kwargs(kwargs)
         self.pop_modify(True)
 
     def _expire(self, **kwargs) -> None:
         """Handle expire state."""
+        kwargs = self._normalize_kwargs(kwargs)
         self.order_status = "closed"
         for attr in ["client_id", "account_id"]:
             if attr in kwargs and kwargs[attr] is not None:
@@ -374,6 +417,7 @@ class Order:
 
     def _dfd(self, **kwargs) -> None:
         """Handle dfd state."""
+        kwargs = self._normalize_kwargs(kwargs)
         self.order_status = "closed"
         for attr in ["client_id", "account_id"]:
             if attr in kwargs and kwargs[attr] is not None:
@@ -381,6 +425,7 @@ class Order:
 
     def _fill(self, **kwargs) -> None:
         """Handle fill state."""
+        kwargs = self._normalize_kwargs(kwargs)
         self.exec_qty += kwargs["exec_qty"]
         # Handle modify/fill race condition
         if self.order_qty is not None and self.exec_qty is not None:
@@ -395,6 +440,7 @@ class Order:
 
     def _bust(self, **kwargs) -> None:
         """Handle bust state."""
+        kwargs = self._normalize_kwargs(kwargs)
         self.exec_qty -= kwargs["exec_qty"]
         if self.open_qty > 0:
             self.order_status = "open"
@@ -402,6 +448,41 @@ class Order:
         for attr in ["client_id", "account_id"]:
             if attr in kwargs and kwargs[attr] is not None:
                 setattr(self, attr, kwargs[attr])
+
+    # Helper: normalize incoming kwargs from camelCase to snake_case
+    def _normalize_kwargs(self, kwargs: Dict[str, Any]) -> Dict[str, Any]:
+        if not kwargs:
+            return {}
+        mapping = {
+            "orderQty": "order_qty",
+            "execQty": "exec_qty",
+            "orderPrice": "order_price",
+            "clOrdID": "cl_ord_id",
+            "destClOrdID": "dest_cl_ord_id",
+            "orderID2": "order_id2",
+            "timeInForce": "time_in_force",
+            "clientID": "client_id",
+            "accountID": "account_id",
+            "orderStatus": "order_status",
+            "dOrderQty": "d_order_qty",
+            "dOrderPrice": "d_order_price",
+            "execPrice": "exec_price",
+            "execID2": "exec_id2",
+            "transactTime": "transact_time",
+            "tradeDate": "trade_date",
+        }
+        out = dict(kwargs)
+        for camel, snake in mapping.items():
+            if camel in out and snake not in out:
+                out[snake] = out[camel]
+        return out
+
+    # CamelCase method aliases to maintain backward compatibility
+    def modReject(self, **kwargs) -> "Order":
+        return self.mod_reject(**kwargs)
+
+    def cxlReject(self, **kwargs) -> "Order":
+        return self.cxl_reject(**kwargs)
 
 
 class GenericChecker:
@@ -415,6 +496,11 @@ class GenericChecker:
     def __init__(self, **kwargs):
         self.orders: List[Order] = []
         self.order_hashes: Dict[str, Dict] = {}
+
+    # CamelCase alias so subclasses can @overrides("newOrder") while the canonical
+    # implementation remains snake_case new_order
+    def newOrder(self, order: Order, **kwargs) -> "GenericChecker":
+        return self.new_order(order, **kwargs)
 
     def find_order_by(self, attribute: str, value: Any) -> Optional[Order]:
         """Find an order by attribute value."""

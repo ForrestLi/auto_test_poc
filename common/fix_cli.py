@@ -7,7 +7,7 @@ import logging
 from queue import Queue, Empty
 from typing import Optional, Dict, Callable, List, Any
 from enum import Enum
-from fix_msg import MsgType as FixMessageType
+from .fix_msg import MsgType as FixMessageType
 
 logger = logging.getLogger(__name__)
 

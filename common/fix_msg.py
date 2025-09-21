@@ -8,7 +8,6 @@ Classes for building and parsing FIX messages
 import datetime
 from enum import Enum
 from typing import Optional, Dict, Any, List
-import fix_msg
 
 # TODO
 # Need to add specific CUSTOM tags (e.g. the ones used to measure different component's performance
