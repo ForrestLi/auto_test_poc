@@ -50,7 +50,14 @@ class FixCodec:
         parts = [f"8={message['8']}"] + [f"{k}={v}" for k, v in pairs]
         body = SOH.join(parts) + SOH
         body_length = len(body)
-        fix_msg = f"8={message['8']}" + SOH + f"9={body_length}" + SOH + SOH.join(parts[1:]) + SOH
+        fix_msg = (
+            f"8={message['8']}"
+            + SOH
+            + f"9={body_length}"
+            + SOH
+            + SOH.join(parts[1:])
+            + SOH
+        )
         checksum = sum(fix_msg.encode("ascii")) % 256
         fix_msg += f"10={checksum:03d}" + SOH
         return fix_msg
@@ -116,7 +123,9 @@ class FixServer:
         async with server:
             await server.serve_forever()
 
-    async def _handle_client(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
+    async def _handle_client(
+        self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter
+    ) -> None:
         peer = writer.get_extra_info("peername")
         self.logger.info("connection from %s", peer)
         session = FixSession(server_comp_id=self.server_comp_id)
@@ -140,7 +149,9 @@ class FixServer:
                 await writer.wait_closed()
             self.logger.info("connection closed: %s", peer)
 
-    async def _handle_message(self, session: FixSession, msg: Dict[str, str], writer: asyncio.StreamWriter) -> None:
+    async def _handle_message(
+        self, session: FixSession, msg: Dict[str, str], writer: asyncio.StreamWriter
+    ) -> None:
         mtype = msg.get("35")
         if mtype == "A":
             # Logon: reply Logon
@@ -193,16 +204,16 @@ class FixServer:
                 "34": str(session.out_seq),
                 "52": time.strftime("%Y%m%d-%H:%M:%S", time.gmtime()),
                 "150": "0",  # ExecType=NEW
-                "39": "0",   # OrdStatus=NEW
+                "39": "0",  # OrdStatus=NEW
                 "11": clid,
                 "37": order_id,
                 "17": exec_id,
                 "55": symbol,
                 "54": side,
                 "38": qty,
-                "151": qty,   # LeavesQty
-                "14": "0",   # CumQty
-                "6": "0",    # AvgPx
+                "151": qty,  # LeavesQty
+                "14": "0",  # CumQty
+                "6": "0",  # AvgPx
             }
             if price is not None:
                 er_new["44"] = price
@@ -222,16 +233,16 @@ class FixServer:
                     "34": str(session.out_seq),
                     "52": time.strftime("%Y%m%d-%H:%M:%S", time.gmtime()),
                     "150": "2",  # ExecType=FILL
-                    "39": "2",   # OrdStatus=FILLED
+                    "39": "2",  # OrdStatus=FILLED
                     "11": clid,
                     "37": order_id,
                     "17": exec_id2,
                     "55": symbol,
                     "54": side,
                     "38": qty,
-                    "32": qty,   # LastQty
-                    "151": "0", # LeavesQty
-                    "14": qty,   # CumQty
+                    "32": qty,  # LastQty
+                    "151": "0",  # LeavesQty
+                    "14": qty,  # CumQty
                     "6": price or "0",
                 }
                 if price is not None:
@@ -256,8 +267,17 @@ def main() -> None:
     parser.add_argument("--host", default="127.0.0.1", help="Listen host")
     parser.add_argument("--port", type=int, default=9876, help="Listen port")
     parser.add_argument("--comp-id", default="SERVER", help="Server SenderCompID (49)")
-    parser.add_argument("--auto-fill", action="store_true", help="Immediately send a FILLED ER after NEW")
-    parser.add_argument("--log-level", default="INFO", choices=["DEBUG", "INFO", "WARNING", "ERROR"], help="Logging level")
+    parser.add_argument(
+        "--auto-fill",
+        action="store_true",
+        help="Immediately send a FILLED ER after NEW",
+    )
+    parser.add_argument(
+        "--log-level",
+        default="INFO",
+        choices=["DEBUG", "INFO", "WARNING", "ERROR"],
+        help="Logging level",
+    )
 
     args = parser.parse_args()
 
@@ -274,4 +294,5 @@ def main() -> None:
 
 if __name__ == "__main__":
     import contextlib
+
     main()

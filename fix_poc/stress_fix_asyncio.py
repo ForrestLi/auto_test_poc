@@ -111,7 +111,9 @@ class AsyncFixClient:
         self._writer.write(fix_str.encode("ascii"))
         await self._writer.drain()
 
-    async def receive_message(self, timeout: Optional[float] = None) -> Optional[Dict[str, str]]:
+    async def receive_message(
+        self, timeout: Optional[float] = None
+    ) -> Optional[Dict[str, str]]:
         try:
             raw = await asyncio.wait_for(self._in_queue.get(), timeout=timeout)
         except asyncio.TimeoutError:
@@ -171,7 +173,14 @@ class AsyncFixClient:
         parts = [f"8={message['8']}"] + [f"{k}={v}" for k, v in pairs]
         body = SOH.join(parts) + SOH
         body_length = len(body)
-        fix_msg = f"8={message['8']}" + SOH + f"9={body_length}" + SOH + SOH.join(parts[1:]) + SOH
+        fix_msg = (
+            f"8={message['8']}"
+            + SOH
+            + f"9={body_length}"
+            + SOH
+            + SOH.join(parts[1:])
+            + SOH
+        )
         checksum = sum(fix_msg.encode("ascii")) % 256
         fix_msg += f"10={checksum:03d}" + SOH
         return fix_msg
@@ -238,8 +247,10 @@ async def worker(
             last_send_ts = now
             sent += 1
 
-            should_sample = measure_latency and (latency_sample_every >= 1) and (
-                (i % latency_sample_every) == 0
+            should_sample = (
+                measure_latency
+                and (latency_sample_every >= 1)
+                and ((i % latency_sample_every) == 0)
             )
             if should_sample:
                 deadline = asyncio.get_event_loop().time() + ack_timeout_s
@@ -383,7 +394,9 @@ async def amain(args) -> None:
         df["run_elapsed_s"] = elapsed
         df["run_overall_rate_msg_per_s"] = overall_rate
         df.to_csv(args.csv, index=False)
-        logging.getLogger("stress.async").info("wrote CSV: %s (rows=%d)", args.csv, len(df))
+        logging.getLogger("stress.async").info(
+            "wrote CSV: %s (rows=%d)", args.csv, len(df)
+        )
 
 
 def main():
@@ -397,22 +410,60 @@ def main():
     parser.add_argument("--target", required=True, help="TargetCompID (56)")
     parser.add_argument("--heartbeat", type=int, default=30, help="HeartBtInt (108)")
 
-    parser.add_argument("--concurrency", type=int, default=8, help="Number of parallel FIX connections")
-    parser.add_argument("--messages-per-conn", type=int, default=1000, help="Messages per connection")
-    parser.add_argument("--rate", type=float, default=100.0, help="Target send rate per connection (msg/s). 0 for max speed")
+    parser.add_argument(
+        "--concurrency", type=int, default=8, help="Number of parallel FIX connections"
+    )
+    parser.add_argument(
+        "--messages-per-conn", type=int, default=1000, help="Messages per connection"
+    )
+    parser.add_argument(
+        "--rate",
+        type=float,
+        default=100.0,
+        help="Target send rate per connection (msg/s). 0 for max speed",
+    )
 
     parser.add_argument("--symbol", default="AAPL", help="Symbol (55)")
-    parser.add_argument("--side", choices=["1", "2"], default="1", help="Side (54): 1=Buy, 2=Sell")
+    parser.add_argument(
+        "--side", choices=["1", "2"], default="1", help="Side (54): 1=Buy, 2=Sell"
+    )
     parser.add_argument("--qty", type=int, default=100, help="OrderQty (38)")
-    parser.add_argument("--price", type=float, default=None, help="Price (44), optional")
+    parser.add_argument(
+        "--price", type=float, default=None, help="Price (44), optional"
+    )
 
-    parser.add_argument("--measure-latency", action="store_true", help="Measure ack latency by waiting for ExecutionReport per order")
-    parser.add_argument("--ack-timeout", type=float, default=5.0, help="Timeout in seconds to wait for an ExecutionReport per message")
-    parser.add_argument("--latency-sample-every", type=int, default=1, help="Measure latency for 1 in N orders per connection")
+    parser.add_argument(
+        "--measure-latency",
+        action="store_true",
+        help="Measure ack latency by waiting for ExecutionReport per order",
+    )
+    parser.add_argument(
+        "--ack-timeout",
+        type=float,
+        default=5.0,
+        help="Timeout in seconds to wait for an ExecutionReport per message",
+    )
+    parser.add_argument(
+        "--latency-sample-every",
+        type=int,
+        default=1,
+        help="Measure latency for 1 in N orders per connection",
+    )
 
-    parser.add_argument("--csv", default=None, help="Optional path to write per-connection statistics as CSV")
-    parser.add_argument("--tag", default=None, help="Optional tag to include in CSV for traceability")
-    parser.add_argument("--log-level", default="INFO", choices=["DEBUG", "INFO", "WARNING", "ERROR"], help="Logging level")
+    parser.add_argument(
+        "--csv",
+        default=None,
+        help="Optional path to write per-connection statistics as CSV",
+    )
+    parser.add_argument(
+        "--tag", default=None, help="Optional tag to include in CSV for traceability"
+    )
+    parser.add_argument(
+        "--log-level",
+        default="INFO",
+        choices=["DEBUG", "INFO", "WARNING", "ERROR"],
+        help="Logging level",
+    )
 
     args = parser.parse_args()
     asyncio.run(amain(args))
@@ -420,4 +471,5 @@ def main():
 
 if __name__ == "__main__":
     import contextlib
+
     main()

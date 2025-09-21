@@ -102,8 +102,10 @@ def worker(
             last_send_ts = now
             sent += 1
 
-            should_sample = measure_latency and (latency_sample_every >= 1) and (
-                (i % latency_sample_every) == 0
+            should_sample = (
+                measure_latency
+                and (latency_sample_every >= 1)
+                and ((i % latency_sample_every) == 0)
             )
             if should_sample:
                 # Read until we find ExecReport with our ClOrdID or until timeout
@@ -154,9 +156,12 @@ def worker(
                         "latency_count": len(latencies),
                         "latency_mean_ms": 1000.0 * (sum(latencies) / len(latencies)),
                         # per-thread percentiles may be noisy; compute anyway for reference
-                        "latency_p50_ms": 1000.0 * float(pd.Series(latencies).quantile(0.5)),
-                        "latency_p90_ms": 1000.0 * float(pd.Series(latencies).quantile(0.9)),
-                        "latency_p99_ms": 1000.0 * float(pd.Series(latencies).quantile(0.99)),
+                        "latency_p50_ms": 1000.0
+                        * float(pd.Series(latencies).quantile(0.5)),
+                        "latency_p90_ms": 1000.0
+                        * float(pd.Series(latencies).quantile(0.9)),
+                        "latency_p99_ms": 1000.0
+                        * float(pd.Series(latencies).quantile(0.99)),
                     }
                 )
             results.append(row)
@@ -179,7 +184,9 @@ def main():
     parser.add_argument("--heartbeat", type=int, default=30, help="HeartBtInt (108)")
 
     # Load shape
-    parser.add_argument("--threads", type=int, default=4, help="Number of sender threads")
+    parser.add_argument(
+        "--threads", type=int, default=4, help="Number of sender threads"
+    )
     parser.add_argument(
         "--messages-per-thread",
         type=int,
@@ -202,7 +209,9 @@ def main():
         help="Side: 1=Buy, 2=Sell (54)",
     )
     parser.add_argument("--qty", type=int, default=100, help="OrderQty (38)")
-    parser.add_argument("--price", type=float, default=None, help="Price (44), optional")
+    parser.add_argument(
+        "--price", type=float, default=None, help="Price (44), optional"
+    )
 
     # Logging
     parser.add_argument(
