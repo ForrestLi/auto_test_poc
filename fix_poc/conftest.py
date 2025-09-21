@@ -25,7 +25,7 @@ class FIXChecker(FIXClientChecker):
 def checker(request, ems, securities, mxsim, ahd_client):
     """Provides default checker object."""
     return FIXChecker(
-        mxgw=ems,
+        ems=ems,
         securities=securities,
         mxsim=mxsim,
         client=request.config.getini("fix_cli"),

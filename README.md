@@ -31,8 +31,7 @@ into test cases using `@pytest.fixture`. This promotes modular and maintainable 
 def checker(request, ems, securities, mxsim, ahd_client):
     """Provides a pre-configured AHD protocol checker object."""
     return AHDChecker(
-        rawPlugin='AHD',
-        mxgw=ems,
+        ems=ems,
         securities=securities,
         mxsim=mxsim,
         client=request.config.getini('ahd_client'),
