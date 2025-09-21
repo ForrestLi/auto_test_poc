@@ -22,7 +22,7 @@ class FIXChecker(FIXClientChecker):
 
 
 @pytest.fixture
-def checker(request, ems, securities, mxsim, ahd_client):
+def checker(request, ems, securities, mxsim, fix_cli):
     """Provides default checker object."""
     return FIXChecker(
         ems=ems,
