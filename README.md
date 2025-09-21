@@ -150,8 +150,8 @@ This repository is organized to separate reusable protocol utilities from sample
     - Options include threads, messages per thread, per-thread rate limiting, pandas-based per-thread summaries, 
     - CSV export, and optional latency measurement via `ExecutionReport` 
     - matching with sampling (`--latency-sample-every`).
-  - `stress_fix_asyncio.py`: A
-    syncIO variant with connection-level concurrency and the same metrics/sampling options.
+    - `stress_fix_asyncio.py`: 
+       AsyncIO variant with connection-level concurrency and the same metrics/sampling options.
   - `fix_server_asyncio.py`: 
     Simple asyncio FIX 4.4 test server wrote for this POC that accepts Logon, Heartbeat/TestRequest, 
     and responds to NewOrderSingle with `ExecutionReport` NEW; with `--auto-fill`, 
