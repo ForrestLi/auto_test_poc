@@ -49,7 +49,7 @@ def test_state_transitions_ordered_modified_canceled(checker, security):
         .verify()
     )
 
-    assert o.order_status == "closed"
+    assert o.order_status == "cancelled"
     assert o.order_price == 11.0
 
 
@@ -68,7 +68,7 @@ def test_fill_and_open_qty(checker, security):
     o = o.fill(execQty=4, execPrice=5.2)
     assert o.exec_qty == 10
     assert o.open_qty == 0
-    assert o.order_status == "closed"
+    assert o.order_status == "filled"
 
 
 def test_d_modify_and_normalization(checker, security):

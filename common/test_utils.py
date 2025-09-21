@@ -139,7 +139,7 @@ class Order:
     def open_qty(self) -> Optional[int]:
         if self.order_qty is None or self.exec_qty is None:
             return None
-        return 0 if self.order_status == "closed" else self.order_qty - self.exec_qty
+        return 0 if self.order_status == "filled" else self.order_qty - self.exec_qty
 
     def __getattr__(self, name: str) -> Any:
         if name.startswith(("old_", "prev_")):
@@ -336,7 +336,7 @@ class Order:
     def _reject(self, **kwargs) -> None:
         """Handle reject state."""
         kwargs = self._normalize_kwargs(kwargs)
-        self.order_status = "closed"
+        self.order_status = "rejected"
 
     def _modify(self, **kwargs) -> None:
         """Handle modify state."""
@@ -375,7 +375,7 @@ class Order:
         self._ordering(**kwargs)
 
         if self.open_qty <= 0:
-            self.order_status = "closed"
+            self.order_status = "rejected"
 
     def _mod_reject(self, **kwargs) -> None:
         """Handle mod reject state."""
@@ -400,7 +400,7 @@ class Order:
         kwargs = self._normalize_kwargs(kwargs)
         self.pop_modify(False)
         self._ordering(**kwargs)
-        self.order_status = "closed"
+        self.order_status = "cancelled"
 
     def _cxl_reject(self, **kwargs) -> None:
         """Handle cxl reject state."""
@@ -410,7 +410,7 @@ class Order:
     def _expire(self, **kwargs) -> None:
         """Handle expire state."""
         kwargs = self._normalize_kwargs(kwargs)
-        self.order_status = "closed"
+        self.order_status = "expired"
         for attr in ["client_id", "account_id"]:
             if attr in kwargs and kwargs[attr] is not None:
                 setattr(self, attr, kwargs[attr])
@@ -418,7 +418,7 @@ class Order:
     def _dfd(self, **kwargs) -> None:
         """Handle dfd state."""
         kwargs = self._normalize_kwargs(kwargs)
-        self.order_status = "closed"
+        self.order_status = "dfd"
         for attr in ["client_id", "account_id"]:
             if attr in kwargs and kwargs[attr] is not None:
                 setattr(self, attr, kwargs[attr])
@@ -432,7 +432,7 @@ class Order:
             self.order_qty = max(self.order_qty, self.exec_qty)
 
         if self.open_qty <= 0:
-            self.order_status = "closed"
+            self.order_status = "filled"
 
         for attr in ["client_id", "account_id"]:
             if attr in kwargs and kwargs[attr] is not None:

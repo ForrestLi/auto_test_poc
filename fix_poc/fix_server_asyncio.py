@@ -7,6 +7,7 @@ from typing import Dict, Optional, Tuple, List
 
 import sys
 from pathlib import Path
+import contextlib
 
 # Ensure repository root is on sys.path when running this file directly
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -293,6 +294,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    import contextlib
-
     main()
