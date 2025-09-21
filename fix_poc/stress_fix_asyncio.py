@@ -5,7 +5,17 @@ import time
 import uuid
 from typing import Dict, Optional, List, Tuple
 
+import sys
+from pathlib import Path
+import contextlib
+
+# Ensure repository root is on sys.path when running this file directly
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 import pandas as pd
+from common.fix_msg import NewOrderSingleMessage, Side, Field
 
 SOH = "\x01"
 SOH_b = b"\x01"
@@ -18,16 +28,16 @@ def build_new_order_single(
     order_qty: int,
     price: Optional[float] = None,
 ) -> Dict[str, str]:
-    msg = {
-        "35": "D",
-        "11": cl_ord_id,
-        "55": symbol,
-        "54": side,  # "1"=Buy, "2"=Sell
-        "38": str(order_qty),
-    }
+    """Build a NewOrderSingle using common.fix_msg and return tag->value dict."""
+    nos = NewOrderSingleMessage()
+    nos.set_field(Field.MSG_TYPE, "D")
+    nos.set_cl_ord_id(cl_ord_id)
+    nos.set_symbol(symbol)
+    nos.set_side(Side.BUY if side == "1" else Side.SELL)
+    nos.set_field(Field.ORDER_QTY, str(order_qty))
     if price is not None:
-        msg["44"] = str(price)
-    return msg
+        nos.set_price(price)
+    return {str(tag): value for tag, value in nos.fields.items()}
 
 
 class AsyncFixClient:

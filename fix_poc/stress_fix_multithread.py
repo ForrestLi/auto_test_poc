@@ -5,9 +5,18 @@ import time
 import uuid
 from typing import Dict, Optional, List
 
+import sys
+from pathlib import Path
+
+# Ensure repository root is on sys.path when running this file directly
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 import pandas as pd
 
 from common.fix_cli import FixClient
+from common.fix_msg import NewOrderSingleMessage, Side, Field
 
 
 def build_new_order_single(
@@ -18,29 +27,22 @@ def build_new_order_single(
     price: Optional[float] = None,
 ) -> Dict[str, str]:
     """
-    Build a minimal NewOrderSingle FIX message as a dict of tag->value strings.
-
-    Required tags:
-    - 35=D (MsgType)
-    - 11=ClOrdID
-    - 55=Symbol
-    - 54=Side (1=Buy, 2=Sell)
-    - 38=OrderQty
-    Optional:
-    - 44=Price (for limit)
-
-    Note: Header fields (8/49/56/34/52) and 10=Checksum are added by FixClient.send_message().
+    Build a NewOrderSingle using common.fix_msg and return a tag->value dict suitable
+    for FixClient.send_message(). Header fields (8/49/56/34/52) and 10 are handled by FixClient.
     """
-    msg = {
-        "35": "D",
-        "11": cl_ord_id,
-        "55": symbol,
-        "54": side,  # "1"=Buy, "2"=Sell
-        "38": str(order_qty),
-    }
+    nos = NewOrderSingleMessage()
+    # Explicitly set message type into fields
+    nos.set_field(Field.MSG_TYPE, "D")
+    nos.set_cl_ord_id(cl_ord_id)
+    nos.set_symbol(symbol)
+    nos.set_side(Side.BUY if side == "1" else Side.SELL)
+    # In fix_msg OrderQty setter expects float, we cast to int/str via set_field semantics
+    nos.set_field(Field.ORDER_QTY, str(order_qty))
     if price is not None:
-        msg["44"] = str(price)
-    return msg
+        nos.set_price(price)
+
+    # Convert internal fields (int keys) to string keys
+    return {str(tag): value for tag, value in nos.fields.items()}
 
 
 def worker(
