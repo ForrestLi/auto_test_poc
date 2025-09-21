@@ -15,8 +15,6 @@ pytest.register_assert_rewrite(
     "ahd_utils",
 )
 
-pytest_plugins = "raptor"
-
 
 class AHDRawClOrdIDAdjustedClientChecker(AHDClientChecker):
     @overrides

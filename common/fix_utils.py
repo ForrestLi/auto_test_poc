@@ -35,7 +35,6 @@ class FIXClientChecker(GenericChecker):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.fix_client = kwargs["fix_client"]
-        # Accept either 'exchange_sim' or legacy 'mxsim'
         self.exchange_sim = kwargs.get("exchange_sim") or kwargs.get("mxsim")
         self.expected_seq_num = 1
 

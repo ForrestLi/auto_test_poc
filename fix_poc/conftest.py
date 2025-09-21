@@ -16,8 +16,6 @@ pytest.register_assert_rewrite(
     "fix_utils",
 )
 
-pytest_plugins = "raptor"
-
 
 class FIXChecker(FIXClientChecker):
     pass
