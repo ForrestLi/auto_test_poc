@@ -1,6 +1,7 @@
 import pytest
 
 from common.test_utils import Order, GenericChecker
+from fix_poc.conftest import FIXChecker
 
 
 class Security:
@@ -10,7 +11,24 @@ class Security:
 
 @pytest.fixture
 def checker():
-    return GenericChecker()
+    class DummyFixClient:
+        def __init__(self):
+            self.sent = []
+            self.received = []
+
+        def sendMsg(self, msg):
+            self.sent.append(msg)
+
+        def receiveMsg(self):
+            return self.received.pop(0) if self.received else {}
+
+    class DummyExchangeSim:
+        def fill(self, order_id, qty, price):
+            # no-op for unit test
+            pass
+
+    fix_client = DummyFixClient()
+    return FIXChecker(fix_client=fix_client, exchange_sim=DummyExchangeSim())
 
 
 @pytest.fixture
@@ -37,9 +55,24 @@ def test_order_constructor_maps_camel_case(checker, security):
 
 
 def test_state_transitions_ordered_modified_canceled(checker, security):
+    order_id = "ORD-STATE-1"
+    # Enqueue ExecutionReport NEW ack with required ORDER_ID (37)
+    checker.fix_client.received.append(
+        {
+            "35": "8",  # ExecutionReport
+            "150": "0",  # ExecType=NEW
+            "39": "0",  # OrdStatus=NEW
+            "37": order_id,
+            "55": security.symbol,
+            "54": "2",  # Side=Sell
+            "38": "100",
+            "44": "10.0",
+        }
+    )
+
     o = (
         Order(checker, security=security, side="S", orderQty=100, orderPrice=10.0)
-        .ordered()
+        .ordered(orderID=order_id)
         .verify()
         .modify(orderPrice=11.0)
         .modified()
@@ -54,27 +87,82 @@ def test_state_transitions_ordered_modified_canceled(checker, security):
 
 
 def test_fill_and_open_qty(checker, security):
+    order_id = "ORD-FILL-1"
+    # NEW ack for order acceptance
+    checker.fix_client.received.append(
+        {
+            "35": "8",
+            "150": "0",
+            "39": "0",
+            "37": order_id,
+            "55": security.symbol,
+            "54": "1",  # Side=Buy
+            "38": "10",
+            "44": "5.0",
+        }
+    )
     o = (
         Order(checker, security=security, side="B", orderQty=10, orderPrice=5.0)
-        .ordered()
+        .ordered(orderID=order_id)
         .verify()
     )
 
     # Use camelCase args to ensure normalization works
-    o = o.fill(execQty=6, execPrice=5.1)
+    # Enqueue ER FILL ack for first partial fill
+    checker.fix_client.received.append(
+        {
+            "35": "8",
+            "150": "2",  # ExecType=FILL
+            "39": "2",  # OrdStatus=FILLED (we treat as fill for unit test)
+            "37": order_id,
+            "32": "6",  # LastShares
+            "31": "5.1",  # LastPx
+            "55": security.symbol,
+            "54": "1",
+            "38": "10",
+        }
+    )
+    o = o.fill(orderID=order_id, execQty=6, execPrice=5.1)
     assert o.exec_qty == 6
     assert o.open_qty == 4
 
-    o = o.fill(execQty=4, execPrice=5.2)
+    # Enqueue ER FILL ack for remaining fill
+    checker.fix_client.received.append(
+        {
+            "35": "8",
+            "150": "2",
+            "39": "2",
+            "37": order_id,
+            "32": "4",
+            "31": "5.2",
+            "55": security.symbol,
+            "54": "1",
+            "38": "10",
+        }
+    )
+    o = o.fill(orderID=order_id, execQty=4, execPrice=5.2)
     assert o.exec_qty == 10
     assert o.open_qty == 0
     assert o.order_status == "filled"
 
 
 def test_d_modify_and_normalization(checker, security):
+    order_id = "ORD-MOD-1"
+    checker.fix_client.received.append(
+        {
+            "35": "8",
+            "150": "0",
+            "39": "0",
+            "37": order_id,
+            "55": security.symbol,
+            "54": "2",
+            "38": "100",
+            "44": "10.0",
+        }
+    )
     o = (
         Order(checker, security=security, side="S", orderQty=100, orderPrice=10.0)
-        .ordered()
+        .ordered(orderID=order_id)
         .verify()
     )
 

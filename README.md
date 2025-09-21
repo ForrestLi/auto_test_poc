@@ -1,6 +1,6 @@
 This repository contains a proof-of-concept (PoC) for an automated testing framework designed for integration testing of 
 electronic trading systems. The framework validates systems communicating via the FIX protocol or other binary protocols
-(e.g., AHD).
+(e.g. AHD).
 
 The primary objective is to automate test scenarios based on priorities as agreed upon by all stakeholders.
 e.g. Cover business critical, regulatory, most repeated smoke/regression suites ones first.
