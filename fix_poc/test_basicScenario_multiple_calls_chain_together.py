@@ -4,14 +4,10 @@ from common.test_utils import Order
 import quickfix as fix
 
 
-class FIXOrder(Order):
-    pass
-
-
 def test_new_order_single_cancel(fix_checker, security):
     """Test new order single followed by cancel."""
     (
-        FIXOrder(
+        Order(
             fix_checker,
             symbol=security.symbol,
             side=fix.Side_BUY,
@@ -29,7 +25,7 @@ def test_new_order_single_cancel(fix_checker, security):
 def test_order_modification(fix_checker, security):
     """Test order modification."""
     order = (
-        FIXOrder(
+        Order(
             fix_checker,
             symbol=security.symbol,
             side=fix.Side_SELL,
@@ -50,7 +46,7 @@ def test_mass_cancel(fix_checker, security, fix_simulator):
     orders = []
     for i in range(3):
         order = (
-            FIXOrder(
+            Order(
                 fix_checker,
                 symbol=security.symbol,
                 side=fix.Side_BUY,
@@ -79,7 +75,7 @@ def test_order_rejection(fix_checker, fix_simulator, security):
     fix_simulator.configure(reject_new_orders=True)
 
     (
-        FIXOrder(
+        Order(
             fix_checker,
             symbol=security.symbol,
             side=fix.Side_BUY,
@@ -95,7 +91,7 @@ def test_order_rejection(fix_checker, fix_simulator, security):
 def test_partial_fill(fix_checker, security):
     """Test partial order fill."""
     order = (
-        FIXOrder(
+        Order(
             fix_checker,
             symbol=security.symbol,
             side=fix.Side_BUY,

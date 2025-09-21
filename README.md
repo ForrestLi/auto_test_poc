@@ -85,22 +85,21 @@ def test_new_order_single_acknowledgment(fix_client, security):
     assert exec_report.getField(fix.Symbol) == symbol
 ```
 2, Chained Calls for Simple Smoke/Regression Suites:
-Provides a concise, readable syntax for common end-to-end workflows (e.g., New Order -> Cancel).
+Provides a concise, readable syntax for common end-to-end workflows (e.g., New Order -> Modify Price -> Cancel).
 
 FIX example
 ```
 def test_new_order_single_cancel(fix_checker, security):
     """Test new order single followed by cancel."""
-    (FIXOrder(fix_checker,
-              symbol=security.symbol,
-              side=fix.Side_BUY,
-              order_qty=100,
-              price=Decimal('100.50'),
-              ord_type=fix.OrdType_LIMIT)
-     .new_order_single()
-     .verify()
-     .cancel()
-     .verify())
+    (Order(checker, security=security, side="S", orderQty=100, orderPrice=10.0)
+        .ordered(orderID=order_id)
+        .verify()
+        .modify(orderPrice=11.0)
+        .modified()
+        .verify()
+        .cancel()
+        .canceled()
+        .verify())
 ```
 
 Which to choose? Use AAA for unique, complex scenarios. Use chained calls for common, repetitive regression tests.
