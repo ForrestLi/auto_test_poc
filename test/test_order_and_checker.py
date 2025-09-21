@@ -15,7 +15,7 @@ def checker():
 
 @pytest.fixture
 def security():
-    return Security("AAPL")
+    return Security("BABA")
 
 
 def test_order_constructor_maps_camel_case(checker, security):
@@ -27,7 +27,7 @@ def test_order_constructor_maps_camel_case(checker, security):
         orderPrice=101.25,
         clOrdID="ABC",
         timeInForce="DAY",
-    )
+    ).verify()
 
     assert o.order_qty == 100
     assert o.order_price == 101.25
