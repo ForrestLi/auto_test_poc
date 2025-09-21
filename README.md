@@ -174,6 +174,13 @@ From the repository root, run:
 pytest -q
 ```
 
+or with more debugging info
+
+```bash
+pytest -v
+```
+
+
 Only the `test/` directory is collected by default. PoC tools in `fix_poc/` and `ahd_poc/` 
 are not part of the unit test run.
 
