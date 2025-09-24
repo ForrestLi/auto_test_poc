@@ -89,7 +89,7 @@ Provides a concise, readable syntax for common end-to-end workflows (e.g., New O
 
 FIX example
 ```
-def test_new_order_single_cancel(fix_checker, security):
+def test_new_order_amend_cancel(fix_checker, security):
     """Test new order single followed by cancel."""
     (Order(checker, security=security, side="S", orderQty=100, orderPrice=10.0)
         .ordered(orderID=order_id)
